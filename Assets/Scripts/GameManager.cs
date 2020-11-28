@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System;
 
 public class GameManager : MonoBehaviour
 {
     public Sprite[] images = new Sprite[4];
     public GameObject bubbles;
     public GameObject bubblePrefab;
+    public GameObject arrow;
+    public bool isCannonEmpty = true;
+    bool isFiring = false;
+    GameObject currBubble;
 
     // Start is called before the first frame update
     void Start()
@@ -19,6 +24,7 @@ public class GameManager : MonoBehaviour
 
     private void init()
     {
+        //initialize board
         int x = 9;
         int y = 4;
 
@@ -27,38 +33,44 @@ public class GameManager : MonoBehaviour
             for (int j = 0; j < x; j++)
             {
                 Vector2 pos = new Vector2((i % 2 == 0 ? (-2.5f + j * 0.6f) : (-2.2f + j * 0.6f)), (3.5f - i*0.5f));
-                Debug.Log(pos.x);
-                Debug.Log(pos.y);
-
                 generateBubble(pos);
                 
             }
         }
     }
 
-    // create new bubble accurding to the value
-    /*private Bubble generateBubble(Vector2 pos)
+    // Update is called once per frame
+    void Update()
     {
-        float rand = Random.Range(0f, 1f);
-
-        return rand < 0.05 ? new Bubble(16, images[3], pos, bubbles.transform ) :
-               rand < 0.15 ? new Bubble(8, images[2], pos, bubbles.transform) :
-               rand < 0.35 ? new Bubble(4, images[1], pos, bubbles.transform) :
-               new Bubble(2, images[0], pos, bubbles.transform);
-
-    }*/
-    private void generateBubble(Vector2 pos)
-    {
-        float rand = Random.Range(0.0f,1.0f);
-        int pow = rand < 0.05 ? 3 :
-                  rand < 0.15 ? 2 :
-                  rand < 0.35 ? 1 : 0;
-
-        createBubble((int)Mathf.Pow(2,pow+1), images[pow], pos, bubbles.transform);
-    
-
+        if (isCannonEmpty)
+        {
+            Vector2 pos = new Vector2(0, -3.8f);
+            currBubble = generateBubble(pos);
+            isCannonEmpty = false;
+        }
+        if (Input.GetMouseButtonDown(0))
+        {
+            currBubble.GetComponent<Bubble>().startMoving(arrow.transform.rotation);
+            isFiring = true;
+        }
+        if (isFiring && !currBubble.GetComponent<Bubble>().IsMoving())
+        {
+            isCannonEmpty = true;
+            isFiring = false;
+        }
     }
-    public void createBubble(int value, Sprite image, Vector2 pos, Transform parent)
+
+    private GameObject generateBubble(Vector2 pos)
+    {
+        float rand = UnityEngine.Random.Range(0.0f,1.0f);
+        int pow = rand < 0.15 ? 3 :
+                  rand < 0.25 ? 2 :
+                  rand < 0.6 ? 1 : 0;
+
+       return createBubble((int)Mathf.Pow(2,pow+1), images[pow], pos, bubbles.transform);
+    }
+
+    public GameObject createBubble(int value, Sprite image, Vector2 pos, Transform parent)
     {
         GameObject bubObj = Instantiate(bubblePrefab, pos, Quaternion.identity, parent);
         string textVal = value.ToString();
@@ -68,14 +80,9 @@ public class GameManager : MonoBehaviour
         bubObj.AddComponent(typeof(Bubble));
         bubObj.GetComponent<Bubble>().value = value;
         bubObj.GetComponent<SpriteRenderer>().sprite = image;
-        
-
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
+        return bubObj;
         
     }
+
+    
 }
