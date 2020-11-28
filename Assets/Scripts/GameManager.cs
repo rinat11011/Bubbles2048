@@ -13,11 +13,16 @@ public class GameManager : MonoBehaviour
     public bool isCannonEmpty = true;
     bool isFiring = false;
     GameObject currBubble;
+    private int maxRows = 11;
+    private int maxCols = 9;
+    public GameObject[,] bubbleMatrix;
 
     // Start is called before the first frame update
     void Start()
     {
+
         bubbles = GameObject.Find("Bubbles");
+        bubbleMatrix = new GameObject[maxRows,maxCols];
         init();
         
     }
@@ -25,8 +30,8 @@ public class GameManager : MonoBehaviour
     private void init()
     {
         //initialize board
-        int x = 9;
-        int y = 4;
+        int x = maxCols;
+        int y = 5;
 
         for(int i = 0; i < y; i++)
         {
@@ -34,6 +39,7 @@ public class GameManager : MonoBehaviour
             {
                 Vector2 pos = new Vector2((i % 2 == 0 ? (-2.5f + j * 0.6f) : (-2.2f + j * 0.6f)), (3.5f - i*0.5f));
                 generateBubble(pos);
+                //bubbleMatrix[i, j].GetComponent<Bubble>().position = pos;
                 
             }
         }
@@ -46,6 +52,7 @@ public class GameManager : MonoBehaviour
         {
             Vector2 pos = new Vector2(0, -3.8f);
             currBubble = generateBubble(pos);
+            currBubble.tag = "CurrBubble";
             isCannonEmpty = false;
         }
         if (Input.GetMouseButtonDown(0))
@@ -66,8 +73,7 @@ public class GameManager : MonoBehaviour
         int pow = rand < 0.15 ? 3 :
                   rand < 0.25 ? 2 :
                   rand < 0.6 ? 1 : 0;
-
-       return createBubble((int)Mathf.Pow(2,pow+1), images[pow], pos, bubbles.transform);
+        return createBubble((int)Mathf.Pow(2,pow+1), images[pow], pos, bubbles.transform);
     }
 
     public GameObject createBubble(int value, Sprite image, Vector2 pos, Transform parent)
@@ -75,7 +81,6 @@ public class GameManager : MonoBehaviour
         GameObject bubObj = Instantiate(bubblePrefab, pos, Quaternion.identity, parent);
         string textVal = value.ToString();
         bubObj.GetComponentInChildren<TextMeshPro>().fontSize = 18 - (textVal.Length - 1) * 2;
-
         bubObj.GetComponentInChildren<TextMeshPro>().text = textVal;
         bubObj.AddComponent(typeof(Bubble));
         bubObj.GetComponent<Bubble>().value = value;
